@@ -1,0 +1,17 @@
+services:
+  syscall-dig:
+    platform: linux/amd64
+    build:
+      context: .
+    privileged: true
+    volumes:
+      - ./test.py:/src/cmd/test/syscall_dig/test.py:ro
+      - ./requirements.txt:/requirements.txt:ro
+      - pip-cache:/root/.cache/pip
+      - python-packages:/var/sandbox/sandbox-python/usr/local/lib/python3.11/dist-packages
+    working_dir: /src
+    command: ["sh", "-c", "install-python-deps && go run cmd/test/syscall_dig/main.go"]
+
+volumes:
+  pip-cache:
+  python-packages:
