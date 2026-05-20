@@ -12,14 +12,6 @@ docker compose run --rm syscall-dig
 Following syscalls are required: 0,1,3,...
 ```
 
-## Architecture
-
-`docker-compose.yml` では `platform: linux/amd64` を指定しています。
-
-syscall 番号は CPU architecture ごとに異なるため、Apple Silicon Mac でも amd64 の syscall 番号を調査できるように固定しています。これに合わせて Dockerfile も `build_amd64.sh` と `config_default_amd64.go` を使います。
-
-arm64 の syscall 番号を調査したい場合は、`platform` を `linux/arm64` に変更し、Dockerfile 側も `build_arm64.sh` と `config_default_arm64.go` を使うように変更してください。
-
 ## test.py を自分のコードに置き換える場所
 
 基本的には [test.py](./test.py) の `User code starts here.` から `User code ends here.` の間だけを変更してください。DifySandbox の UI で入力されるコードは、sandbox 初期化用テンプレートの中に埋め込まれて実行される想定なので、この検証用 `test.py` でも同じ位置関係を保ちます。

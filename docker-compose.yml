@@ -1,6 +1,5 @@
 services:
   syscall-dig:
-    platform: linux/amd64
     build:
       context: .
     privileged: true
