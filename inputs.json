@@ -1,0 +1,3 @@
+{
+  "box_response_body": "{\"id\":\"123456789\",\"name\":\"sample.docx\",\"representations\":{\"entries\":[{\"representation\":\"markdown\",\"status\":{\"state\":\"success\"},\"info\":{\"url\":\"https://example.test/representation/info\"},\"content\":{\"url_template\":\"https://example.test/representation/{+asset_path}\"}}]}}"
+}
