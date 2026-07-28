@@ -1,48 +1,3 @@
-import ctypes
-import json
-import os
-import sys
-import traceback
-
-
-INPUTS_FILE = os.environ.get(
-    "SYSCALL_DIG_INPUTS_FILE",
-    "/syscall-dig-inputs.json",
-)
-with open(INPUTS_FILE, encoding="utf-8") as inputs_file:
-    syscall_dig_inputs = inputs_file.read()
-
-enable_network_value = os.environ.get(
-    "SYSCALL_DIG_ENABLE_NETWORK",
-    "true",
-).lower()
-if enable_network_value not in {"true", "false"}:
-    raise ValueError(
-        "SYSCALL_DIG_ENABLE_NETWORK must be either true or false."
-    )
-enable_network = enable_network_value == "true"
-
-
-# setup sys.excepthook
-def excepthook(type, value, tb):
-    sys.stderr.write("".join(traceback.format_exception(type, value, tb)))
-    sys.stderr.flush()
-    sys.exit(-1)
-
-
-sys.excepthook = excepthook
-
-lib = ctypes.CDLL("/var/sandbox/sandbox-python/python.so")
-lib.DifySeccomp.argtypes = [ctypes.c_uint32, ctypes.c_uint32, ctypes.c_bool]
-lib.DifySeccomp.restype = None
-
-os.chdir("/var/sandbox/sandbox-python")
-
-lib.DifySeccomp(65537, 1001, enable_network)
-
-
-# User code starts here.
-
 import json
 from typing import Any
 
@@ -187,22 +142,3 @@ def main(box_response_body: str) -> dict:
         "file_name": result["file_name"],
         "error": "",
     }
-
-# User code ends here.
-
-from json import dumps, loads
-
-# execute main function, and return the result
-inputs = loads(syscall_dig_inputs)
-if not isinstance(inputs, dict):
-    raise TypeError("The syscall test inputs must be a JSON object.")
-output = main(**inputs)
-
-# convert output to json and print
-output = dumps(output, indent=4)
-
-result = f"""<<RESULT>>
-{output}
-<<RESULT>>"""
-
-print(result)

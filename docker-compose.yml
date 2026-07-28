@@ -4,7 +4,8 @@ services:
       context: .
     privileged: true
     volumes:
-      - ./test.py:/src/cmd/test/syscall_dig/test.py:ro
+      - ./scripts/sandbox-runner.py:/src/cmd/test/syscall_dig/test.py:ro
+      - ./test.py:/syscall-dig-target.py:ro
       - ./inputs.json:/syscall-dig-inputs.json:ro
       - ./requirements.txt:/requirements.txt:ro
       - ./scripts/run-syscall-dig.sh:/usr/local/bin/run-syscall-dig:ro

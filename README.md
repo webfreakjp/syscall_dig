@@ -12,33 +12,28 @@ docker compose run --rm syscall-dig
 Following syscalls are required: 0,1,3,...
 ```
 
-## test.py を自分のコードに置き換える場所
+## 入れ替えるファイル
 
-基本的には [test.py](./test.py) の `User code starts here.` から `User code ends here.` の間を変更してください。DifySandbox の UI で入力されるコードは、sandbox 初期化用テンプレートの中に埋め込まれて実行される想定なので、この検証用 `test.py` でも同じ位置関係を保ちます。
+チェック対象とsandbox実行処理は分離されています。通常変更するのは次の3ファイルだけです。
 
-変更してよい場所:
+- [test.py](./test.py): チェック対象のDify Codeノードコード
+- [inputs.json](./inputs.json): `main()` に渡すテスト入力
+- [requirements.txt](./requirements.txt): チェック対象が使う外部パッケージ
 
-- `main()` の中身
-- `main()` から呼ぶ補助関数の追加
-- 自分のコードで必要な `import`
-
-`main()` が引数を受け取る場合でも、`test.py` の実行ラッパーは変更しません。引数に渡すテスト値は [inputs.json](./inputs.json) で管理します。
+sandbox初期化、対象コードの読み込み、`main()` の呼び出し、結果表示は [scripts/sandbox-runner.py](./scripts/sandbox-runner.py) が担当します。このランナーをチェック対象ごとに変更する必要はありません。
 
 ## スクリプトを入れ替えて検証する手順
 
-### 1. ユーザーコードを入れ替える
+### 1. `test.py` を入れ替える
 
-[test.py](./test.py) の次のマーカー間だけを、Dify Code ノードのコードに置き換えます。
+[test.py](./test.py) 全体をDify Codeノードのコードに置き換えます。sandbox初期化コードやマーカーを追加する必要はありません。呼び出し可能な `main()` を定義してください。
 
 ```python
-# User code starts here.
-
-# Dify Code ノードのコード
-
-# User code ends here.
+def main(text: str) -> dict:
+    return {
+        "result": text.upper(),
+    }
 ```
-
-マーカー外にはsandbox初期化、`inputs.json` の読み込み、`main()` の呼び出し、結果表示の処理があります。ここはスクリプトを入れ替えるたびに変更する必要はありません。
 
 ### 2. `main()` の引数に合わせて Inputs を設定する
 
