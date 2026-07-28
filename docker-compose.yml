@@ -7,17 +7,12 @@ services:
       - ./test.py:/src/cmd/test/syscall_dig/test.py:ro
       - ./inputs.json:/syscall-dig-inputs.json:ro
       - ./requirements.txt:/requirements.txt:ro
+      - ./scripts/run-syscall-dig.sh:/usr/local/bin/run-syscall-dig:ro
+      - ./scripts/syscall-report.go:/src/cmd/syscall_report/main.go:ro
       - pip-cache:/root/.cache/pip
       - python-packages:/var/sandbox/sandbox-python/usr/local/lib/python3.11/dist-packages
     working_dir: /src
-    command:
-      - sh
-      - -c
-      - >-
-        install-python-deps &&
-        ALLOWED_SYSCALLS="$$(seq -s, 0 499)"
-        python3 cmd/test/syscall_dig/test.py &&
-        exec go run cmd/test/syscall_dig/main.go
+    command: ["sh", "/usr/local/bin/run-syscall-dig"]
 
 volumes:
   pip-cache:

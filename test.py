@@ -12,6 +12,16 @@ INPUTS_FILE = os.environ.get(
 with open(INPUTS_FILE, encoding="utf-8") as inputs_file:
     syscall_dig_inputs = inputs_file.read()
 
+enable_network_value = os.environ.get(
+    "SYSCALL_DIG_ENABLE_NETWORK",
+    "true",
+).lower()
+if enable_network_value not in {"true", "false"}:
+    raise ValueError(
+        "SYSCALL_DIG_ENABLE_NETWORK must be either true or false."
+    )
+enable_network = enable_network_value == "true"
+
 
 # setup sys.excepthook
 def excepthook(type, value, tb):
@@ -28,7 +38,7 @@ lib.DifySeccomp.restype = None
 
 os.chdir("/var/sandbox/sandbox-python")
 
-lib.DifySeccomp(65537, 1001, 1)
+lib.DifySeccomp(65537, 1001, enable_network)
 
 
 # User code starts here.

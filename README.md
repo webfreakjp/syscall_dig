@@ -114,6 +114,51 @@ docker compose run --rm syscall-dig
 
 条件分岐によって使用するライブラリや処理が大きく変わるコードでは、代表的な `inputs.json` ごとにsyscall採取を実行し、得られたsyscallの和集合を使用してください。入力値が対象経路を通らない場合、その経路だけで必要になるsyscallは検出できません。
 
+## デフォルト許可syscallとの比較
+
+採取後は、コンテナ内で実際に使用されている [dify-sandboxのamd64許可リスト](https://github.com/langgenius/dify-sandbox/blob/main/internal/static/python_syscall/syscalls_amd64.go) を数値化し、検出結果との差分を自動表示します。Web上の値を固定コピーしていないため、dify-sandboxを更新してイメージを再ビルドした場合も自動的に追従します。
+
+```text
+Dify sandbox commit: <commit>
+
+Syscall comparison (amd64)
+Default allowed (...): ...
+Network allowed (...): ...
+EPERM instead of kill (...): ...
+
+enable_network=false
+Effective allowed (...): ...
+Detected required (...): ...
+Already allowed (...): ...
+Additional required (...): ...
+
+enable_network=true
+Effective allowed (...): ...
+Detected required (...): ...
+Already allowed (...): ...
+Additional required (...): ...
+```
+
+各行の意味:
+
+- `Default allowed`: `ALLOW_SYSCALLS` の数値リスト
+- `Network allowed`: `ALLOW_NETWORK_SYSCALLS` の数値リスト
+- `EPERM instead of kill`: `ALLOW_ERROR_SYSCALLS`。許可ではなく、プロセスをkillせずEPERMを返すsyscall
+- `Effective allowed` (`false`): `Default allowed` と同じ
+- `Effective allowed` (`true`): `Default allowed` と `Network allowed` の和集合
+- `Detected required`: 対象コードの実行で検出されたsyscall
+- `Already allowed`: 検出値のうち、すでに `Effective allowed` に含まれるもの
+- `Additional required`: 検出値のうち、デフォルト許可へ追加が必要なもの
+
+syscall探索も `enable_network=false` と `true` で別々に実行します。利用するDify環境の `enable_network` 設定に対応する `Additional required` を確認してください。空ならそのモードでは追加変更は不要です。
+
+レポートにはイメージ内のdify-sandboxコミットも表示されます。GitHubの最新 `main` と比較したい場合は、キャッシュを使わずに再ビルドしてから実行してください。
+
+```bash
+docker compose build --no-cache
+docker compose run --rm syscall-dig
+```
+
 ## 外部パッケージを使う場合
 
 このリポジトリでは、検証用に [requirements.txt](./requirements.txt) をコンテナ起動時にインストールする形にしています。外部パッケージを使う場合は `requirements.txt` に追記して、通常通り実行してください。
